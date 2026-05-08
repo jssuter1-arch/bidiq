@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { RefreshCw, Upload, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { RefreshCw, Upload, AlertCircle } from 'lucide-react';
 import api from '@/services/api';
 import PageWrapper from '@/components/layout/PageWrapper';
 import PageHeader from '@/components/layout/PageHeader';
@@ -9,8 +9,7 @@ import Badge from '@/components/ui/Badge';
 import Table from '@/components/ui/Table';
 import FileUpload from '@/components/ui/FileUpload';
 import Select from '@/components/ui/Select';
-import { formatDate, formatRelative } from '@/utils/format';
-import { supabase } from '@/services/supabase';
+import { formatRelative } from '@/utils/format';
 import toast from 'react-hot-toast';
 
 export default function YardiPage() {

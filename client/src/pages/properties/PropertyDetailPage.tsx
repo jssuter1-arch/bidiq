@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Building2, MapPin } from 'lucide-react';
+import { ArrowLeft, Edit } from 'lucide-react';
 import api from '@/services/api';
 import PageWrapper from '@/components/layout/PageWrapper';
 import PageHeader from '@/components/layout/PageHeader';

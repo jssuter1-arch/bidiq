@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Calculator, Save, TrendingUp } from 'lucide-react';
-import CountUp from 'react-countup';
 import api from '@/services/api';
 import toast from 'react-hot-toast';
 import PageWrapper from '@/components/layout/PageWrapper';

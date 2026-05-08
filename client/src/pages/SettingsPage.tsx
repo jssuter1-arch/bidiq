@@ -19,7 +19,7 @@ export default function SettingsPage() {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const { userRole } = useAuthStore();
 
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit } = useForm();
 
   useEffect(() => {
     if (tab === 'users') {
@@ -30,7 +30,7 @@ export default function SettingsPage() {
     }
   }, [tab]);
 
-  const onOrgSave = async (data: any) => {
+  const onOrgSave = async (_data: any) => {
     toast.success('Settings saved (UI only — connect to API)');
   };
 

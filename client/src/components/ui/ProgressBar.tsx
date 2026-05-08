@@ -20,7 +20,7 @@ const heights = { xs: 'h-1', sm: 'h-1.5', md: 'h-2' };
 
 export default function ProgressBar({ value, max = 100, showLabel, size = 'sm', className, color }: ProgressBarProps) {
   const pct = Math.min(100, (value / max) * 100);
-  const autoColor = !color ? (pct <= 90 ? 'success' : pct <= 100 ? 'warning' : 'danger') as const : color;
+  const autoColor: keyof typeof colors = color ?? (pct <= 90 ? 'success' : pct <= 100 ? 'warning' : 'danger');
 
   return (
     <div className={cn('flex items-center gap-2', className)}>

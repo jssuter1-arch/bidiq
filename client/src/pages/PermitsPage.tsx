@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Shield, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import api from '@/services/api';
 import PageWrapper from '@/components/layout/PageWrapper';
 import PageHeader from '@/components/layout/PageHeader';

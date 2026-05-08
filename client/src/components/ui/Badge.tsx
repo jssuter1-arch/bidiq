@@ -29,14 +29,15 @@ export default function Badge({ children, variant = 'default', size = 'md', dot,
   return (
     <span className={cn('inline-flex items-center gap-1 rounded-full font-medium', variants[variant], sizes[size], className)}>
       {dot && (
-        <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', {
-          'bg-success': variant === 'success',
-          'bg-warning': variant === 'warning',
-          'bg-danger': variant === 'danger',
-          'bg-info': variant === 'info',
-          'bg-brand-400': variant === 'brand',
-          'bg-[var(--text-tertiary)]': variant === 'default',
-        })} />
+        <span className={cn(
+          'w-1.5 h-1.5 rounded-full flex-shrink-0',
+          variant === 'success' ? 'bg-success' :
+          variant === 'warning' ? 'bg-warning' :
+          variant === 'danger' ? 'bg-danger' :
+          variant === 'info' ? 'bg-info' :
+          variant === 'brand' ? 'bg-brand-400' :
+          'bg-[var(--text-tertiary)]'
+        )} />
       )}
       {children}
     </span>

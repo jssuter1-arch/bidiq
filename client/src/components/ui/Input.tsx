@@ -31,8 +31,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               'w-full rounded-lg border bg-[var(--bg-elevated)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]',
               'border-[var(--border-default)] focus:border-brand-500 focus:outline-none',
               'h-9 px-3 text-sm transition-colors',
-              iconLeft && 'pl-9',
-              iconRight && 'pr-9',
+              iconLeft ? 'pl-9' : undefined,
+              iconRight ? 'pr-9' : undefined,
               error && 'border-danger focus:border-danger',
               className
             )}
