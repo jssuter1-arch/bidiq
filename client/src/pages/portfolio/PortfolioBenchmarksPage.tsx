@@ -42,13 +42,13 @@ export default function PortfolioBenchmarksPage() {
   const categoryRows = aggregates
     .filter((a) => a.metric_key.startsWith('cost_per_unit_'))
     .map((a) => {
-      const parts = a.metric_key.replace('cost_per_unit_', '').split('_');
-      const category = parts.slice(0, -1).join('_') || parts[0];
+      const propertyTypeSuffix = a.property_type ? `_${a.property_type}` : '';
+      const category = a.metric_key.replace('cost_per_unit_', '').replace(propertyTypeSuffix, '');
       const orgVal = orgAverages[category];
       const pct = orgVal ? percentileLabel(orgVal, a.value_p25, a.value_p50, a.value_p75) : null;
       return { ...a, category, org_value: orgVal, pct };
     })
-    .filter((r) => r.sample_org_count >= 5);
+;
 
   // CO rate comparison
   const coRateRows = aggregates

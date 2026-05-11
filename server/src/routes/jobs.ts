@@ -37,4 +37,14 @@ router.get('/scenario-recalc', requireCronSecret, async (_req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// GET /api/v1/jobs/cross-tenant-aggregation
+// Invoked nightly by Vercel Cron. Protected by CRON_SECRET bearer token.
+router.get('/cross-tenant-aggregation', requireCronSecret, async (_req, res, next) => {
+  try {
+    const { runCrossTenantAggregation } = await import('../jobs/cross-tenant-aggregation-job');
+    const result = await runCrossTenantAggregation();
+    res.json({ data: result });
+  } catch (err) { next(err); }
+});
+
 export default router;

@@ -150,7 +150,7 @@ export default function CrossTenantParticipationPage() {
                 const val = r.new_values?.is_participating;
                 return <Badge variant={val ? 'success' : 'default'}>{val ? 'Opted In' : 'Opted Out'}</Badge>;
               }},
-              { key: 'performed_by', header: 'Changed By', render: (r: any) => r.performed_by || '—' },
+              { key: 'performed_by', header: 'Changed By', render: (r: any) => r.users?.full_name || r.performed_by || '—' },
             ]}
             emptyText="No history"
           />

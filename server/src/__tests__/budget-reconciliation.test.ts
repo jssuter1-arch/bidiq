@@ -16,12 +16,11 @@ const mockFrom = supabaseAdmin.from as ReturnType<typeof vi.fn>;
 
 function makeChain(result: unknown) {
   const c: Record<string, unknown> = {};
-  const methods = ['select', 'update', 'insert', 'eq', 'in', 'limit'];
+  const methods = ['select', 'update', 'insert', 'delete', 'eq', 'in', 'lt', 'limit'];
   for (const m of methods) c[m] = vi.fn(() => c);
   (c.single as any) = vi.fn().mockResolvedValue(result);
   // Make awaiting the chain resolve like a resolved promise
-  (c as any).then = undefined; // disable auto-then
-  // For methods that return arrays (select without .single()), mock data directly
+  (c as any).then = undefined; // disable auto-then — awaiting returns the chain object itself
   return c;
 }
 
@@ -94,7 +93,10 @@ describe('runBudgetReconciliation', () => {
         } as any;
       }
       if (table === 'budget_reconciliation_log') {
-        return { insert: insertMock } as any;
+        const deleteChain: any = { eq: vi.fn(), lt: vi.fn() };
+        deleteChain.eq.mockReturnValue(deleteChain);
+        deleteChain.lt.mockReturnValue(deleteChain);
+        return { insert: insertMock, delete: vi.fn(() => deleteChain) } as any;
       }
       if (table === 'users') {
         return {
@@ -130,7 +132,11 @@ describe('runBudgetReconciliation', () => {
       if (table === 'projects') {
         return { select: vi.fn().mockResolvedValue({ data: [], error: null }) } as any;
       }
-      return {} as any;
+      // budget_reconciliation_log pruning delete must be chainable
+      const deleteChain: any = { eq: vi.fn(), lt: vi.fn() };
+      deleteChain.eq.mockReturnValue(deleteChain);
+      deleteChain.lt.mockReturnValue(deleteChain);
+      return { delete: vi.fn(() => deleteChain) } as any;
     });
 
     const result = await runBudgetReconciliation();

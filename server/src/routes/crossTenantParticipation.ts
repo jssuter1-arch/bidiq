@@ -19,10 +19,10 @@ router.get('/', auth, async (req: AuthenticatedRequest, res: Response, next: Nex
 
     if (error) return res.status(400).json({ error: error.message });
 
-    // History from audit log
+    // History from audit log with performer name
     const { data: history } = await supabaseAdmin
       .from('audit_log')
-      .select('performed_by, created_at, new_values, old_values')
+      .select('performed_by, created_at, new_values, old_values, users(full_name)')
       .eq('org_id', req.orgId!)
       .eq('table_name', 'cross_tenant_participation')
       .order('created_at', { ascending: false })

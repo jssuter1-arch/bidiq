@@ -862,6 +862,7 @@ BEGIN
     ('cost_per_unit_cabinets_residential',           'residential', NULL, 'greater_boston', 6, 36, 4200,  5800,  8500,  5900,  1600, NOW()),
     ('cost_per_unit_tile_residential',               'residential', NULL, 'greater_boston', 6, 32, 1800,  2400,  3200,  2430,  500, NOW()),
     ('cost_per_unit_general_conditions_residential', 'residential', NULL, 'greater_boston', 6, 48, 1000,  1400,  2000,  1420,  340, NOW()),
+    ('change_order_rate_overall',                    NULL,          NULL, 'greater_boston', 6, 300, 0.08, 0.12,  0.17,  0.122, 0.03, NOW()),
     ('change_order_rate_scope_creep',                NULL,          NULL, 'greater_boston', 6, 120, 0.08, 0.12,  0.18,  0.125, 0.03, NOW()),
     ('change_order_rate_unforeseen_conditions',      NULL,          NULL, 'greater_boston', 6, 100, 0.04, 0.07,  0.12,  0.072, 0.025, NOW()),
     ('change_order_rate_design_change',              NULL,          NULL, 'greater_boston', 6, 80,  0.03, 0.05,  0.09,  0.053, 0.02, NOW())

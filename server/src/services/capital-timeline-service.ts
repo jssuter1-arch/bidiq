@@ -106,11 +106,11 @@ export async function getCapitalTimeline(
   // Loan debt service estimate: simple 6% annual on active loan principals
   const { data: loans } = await supabaseAdmin
     .from('loan_draws')
-    .select('amount')
+    .select('approved_amount')
     .eq('org_id', orgId)
-    .eq('status', 'funded');
+    .in('status', ['approved', 'funded']);
 
-  const totalLoanPrincipal = (loans || []).reduce((s: number, l: any) => s + (l.amount || 0), 0);
+  const totalLoanPrincipal = (loans || []).reduce((s: number, l: any) => s + (l.approved_amount || 0), 0);
   const monthlyDebtService = totalLoanPrincipal * 0.005; // ~6% annual / 12
   const debtServicePerPeriod = granularity === 'monthly' ? monthlyDebtService : monthlyDebtService * 3;
 

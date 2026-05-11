@@ -67,12 +67,13 @@ export async function getDecisionHubItems(orgId: string): Promise<DecisionHubOut
     });
   }
 
-  // 2. Deals closed_won not yet promoted (no matching project with deal_id link)
+  // 2. Deals closed_won not yet promoted (promoted_to_property_id is null means not yet acted on)
   const { data: wonDeals } = await supabaseAdmin
     .from('acquisition_deals')
     .select('id, deal_name, updated_at, purchase_price')
     .eq('org_id', orgId)
-    .eq('status', 'closed_won');
+    .eq('status', 'closed_won')
+    .is('promoted_to_property_id', null);
 
   for (const deal of wonDeals || []) {
     const days = daysSince(deal.updated_at);
@@ -147,7 +148,7 @@ export async function getDecisionHubItems(orgId: string): Promise<DecisionHubOut
     .from('permits')
     .select('id, permit_type, expiry_date, projects(id, name)')
     .eq('org_id', orgId)
-    .eq('status', 'approved')
+    .in('status', ['approved', 'active'])
     .lte('expiry_date', in30.toISOString().slice(0, 10));
 
   for (const permit of expiringPermits || []) {

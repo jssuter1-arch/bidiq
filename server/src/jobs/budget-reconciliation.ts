@@ -26,6 +26,14 @@ export async function runBudgetReconciliation(): Promise<{
   drifted: number;
   corrected: number;
 }> {
+  // Prune clean-pass log rows older than 90 days to prevent unbounded table growth.
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+  await supabaseAdmin
+    .from('budget_reconciliation_log')
+    .delete()
+    .eq('drift_detected', false)
+    .lt('ran_at', ninetyDaysAgo);
+
   // Fetch all projects
   const { data: projects, error: projErr } = await supabaseAdmin
     .from('projects')

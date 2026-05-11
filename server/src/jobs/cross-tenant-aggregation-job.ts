@@ -143,18 +143,28 @@ export async function runCrossTenantAggregation(): Promise<{
         value: total / sqft,
       });
 
-      // change_order_rate
-      if (inv.is_change_order) {
-        dataPoints.push({
-          orgId: inv.org_id,
-          metricKey: `change_order_rate_${li.category}`,
-          propertyType: prop.propertyType,
-          unitType: null,
-          cityBucket,
-          value: 1, // binary indicator; averaged over all data points
-        });
-      }
+      // change_order_rate per category — push for every line item (1 = CO, 0 = regular)
+      dataPoints.push({
+        orgId: inv.org_id,
+        metricKey: `change_order_rate_${li.category}`,
+        propertyType: prop.propertyType,
+        unitType: null,
+        cityBucket,
+        value: inv.is_change_order ? 1 : 0,
+      });
     }
+
+    // change_order_rate_overall — one data point per invoice so the mean equals
+    // the fraction of invoices (by count) that are change orders, not biased by
+    // how many line items each invoice has.
+    dataPoints.push({
+      orgId: inv.org_id,
+      metricKey: 'change_order_rate_overall',
+      propertyType: prop.propertyType,
+      unitType: null,
+      cityBucket,
+      value: inv.is_change_order ? 1 : 0,
+    });
   }
 
   // 4. Group by (metricKey, propertyType, unitType, cityBucket)

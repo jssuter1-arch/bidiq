@@ -88,7 +88,7 @@ export async function getSavingsYTD(orgId: string): Promise<SavingsCalcOutput> {
   const { data: aggRow } = await supabaseAdmin
     .from('cross_tenant_aggregates')
     .select('value_p50')
-    .like('metric_key', 'change_order_rate_%')
+    .eq('metric_key', 'change_order_rate_overall')
     .limit(1)
     .maybeSingle();
 
@@ -133,19 +133,24 @@ export async function getSavingsYTD(orgId: string): Promise<SavingsCalcOutput> {
 
 export async function getSavingsTrend(orgId: string): Promise<MonthlySavingsPoint[]> {
   // Build monthly cumulative savings over the trailing 24 months.
+  // Includes Component 1 (renovation under-budget) and Component 2 (overpay caught).
+  // Component 3 (CO discipline) is a rate comparison without a time series, so it is
+  // excluded from the trend.
   const now = new Date();
+  const twoYearsAgo = `${now.getFullYear() - 2}-01-01`;
   const months: string[] = [];
   for (let i = 23; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
   }
 
+  // Component 1: renovation under-budget
   const { data: completionSnaps } = await supabaseAdmin
     .from('project_budget_snapshots')
     .select('project_id, actual_spend_at_snapshot, effective_date')
     .eq('org_id', orgId)
     .eq('snapshot_type', 'completion')
-    .gte('effective_date', `${now.getFullYear() - 2}-01-01`);
+    .gte('effective_date', twoYearsAgo);
 
   const { data: bankSnaps } = await supabaseAdmin
     .from('project_budget_snapshots')
@@ -156,7 +161,6 @@ export async function getSavingsTrend(orgId: string): Promise<MonthlySavingsPoin
   const bankByProject = new Map<string, number>();
   (bankSnaps || []).forEach((s: any) => bankByProject.set(s.project_id, s.budget_total));
 
-  // savings per month
   const savingsByMonth = new Map<string, number>();
   for (const snap of completionSnaps || []) {
     const month = snap.effective_date?.slice(0, 7);
@@ -164,6 +168,28 @@ export async function getSavingsTrend(orgId: string): Promise<MonthlySavingsPoin
     const bank = bankByProject.get(snap.project_id);
     if (bank && bank > snap.actual_spend_at_snapshot) {
       savingsByMonth.set(month, (savingsByMonth.get(month) || 0) + (bank - snap.actual_spend_at_snapshot));
+    }
+  }
+
+  // Component 2: overpay caught — by invoice date
+  const { data: flaggedInvoices } = await supabaseAdmin
+    .from('contractor_invoices')
+    .select('invoice_date, total_amount, original_amount, status')
+    .eq('org_id', orgId)
+    .eq('flagged_overpay', true)
+    .gte('invoice_date', twoYearsAgo);
+
+  for (const inv of flaggedInvoices || []) {
+    const month = inv.invoice_date?.slice(0, 7);
+    if (!month) continue;
+    let saved = 0;
+    if (inv.status === 'rejected') {
+      saved = inv.original_amount ?? inv.total_amount ?? 0;
+    } else if (inv.original_amount && inv.total_amount && inv.original_amount > inv.total_amount) {
+      saved = inv.original_amount - inv.total_amount;
+    }
+    if (saved > 0) {
+      savingsByMonth.set(month, (savingsByMonth.get(month) || 0) + saved);
     }
   }
 
