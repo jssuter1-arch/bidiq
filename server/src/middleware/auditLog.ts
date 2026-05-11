@@ -19,7 +19,7 @@ export function auditLog(action: AuditAction, tableName: string) {
           new_values: ['create', 'update'].includes(action) ? req.body : null,
           ip_address: req.ip,
           user_agent: req.headers['user-agent'],
-        }).then().catch();
+        }).then(null, () => {});
       }
       return originalJson(body);
     };
