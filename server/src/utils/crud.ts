@@ -3,6 +3,14 @@ import { AuthenticatedRequest } from '../middleware/authenticateUser';
 import { supabaseAdmin } from './supabase';
 import { SupabaseClient } from '@supabase/supabase-js';
 
+function toSnakeCase(obj: Record<string, any>): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    result[key.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)] = value;
+  }
+  return result;
+}
+
 type QueryBuilder = (
   sb: SupabaseClient,
   orgId: string,
@@ -48,7 +56,7 @@ export function createHandler(table: string) {
     try {
       const { data, error } = await supabaseAdmin
         .from(table)
-        .insert({ ...req.body, org_id: req.orgId, created_by: req.userId })
+        .insert({ ...toSnakeCase(req.body), org_id: req.orgId, created_by: req.userId })
         .select()
         .single();
       if (error) return res.status(400).json({ error: error.message });
@@ -66,7 +74,7 @@ export function updateHandler(table: string) {
 
       const { data, error } = await supabaseAdmin
         .from(table)
-        .update(req.body)
+        .update(toSnakeCase(req.body))
         .eq('id', req.params.id)
         .eq('org_id', req.orgId!)
         .select()

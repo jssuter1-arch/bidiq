@@ -30,6 +30,7 @@ router.get('/', ...auth, listHandler('properties', (sb, orgId, filters) => {
   let q = sb.from('properties').select('*', { count: 'exact' }).eq('org_id', orgId);
   if (filters.status) q = q.eq('status', filters.status);
   if (filters.propertyType) q = q.eq('property_type', filters.propertyType);
+  if (filters.search) q = q.ilike('name', `%${filters.search}%`);
   return q.order('created_at', { ascending: false });
 }));
 

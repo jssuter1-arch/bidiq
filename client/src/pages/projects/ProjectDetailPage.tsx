@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, DollarSign, FileText, Shield, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Edit, DollarSign, FileText, Shield, TrendingUp, Download, BarChart2 } from 'lucide-react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import ProjectSummaryPDF from '@/components/pdf/ProjectSummaryPDF';
 import api from '@/services/api';
 import PageWrapper from '@/components/layout/PageWrapper';
 import PageHeader from '@/components/layout/PageHeader';
@@ -13,8 +15,12 @@ import Table from '@/components/ui/Table';
 import ProgressBar from '@/components/ui/ProgressBar';
 import Skeleton from '@/components/ui/Skeleton';
 import { formatCurrency, formatDate, formatPercent } from '@/utils/format';
+import { useModuleAccess } from '@/hooks/useModuleAccess';
+// Phase 3: Budget Lifecycle components
+import BudgetTimelineSection from '@/components/budget-lifecycle/BudgetTimelineSection';
+import BankReconciliationPanel from '@/components/budget-lifecycle/BankReconciliationPanel';
 
-const TABS = [
+const BASE_TABS = [
   { id: 'overview', label: 'Overview', icon: <DollarSign className="w-3.5 h-3.5" /> },
   { id: 'budget', label: 'Budget', icon: <FileText className="w-3.5 h-3.5" /> },
   { id: 'invoices', label: 'Invoices', icon: <FileText className="w-3.5 h-3.5" /> },
@@ -22,12 +28,17 @@ const TABS = [
   { id: 'draws', label: 'Draws', icon: <TrendingUp className="w-3.5 h-3.5" /> },
 ];
 
+const TIMELINE_TAB = { id: 'timeline', label: 'Timeline', icon: <BarChart2 className="w-3.5 h-3.5" /> };
+
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('overview');
+  const { hasAccess } = useModuleAccess();
+
+  const hasBudgetAccess = hasAccess('budget_lifecycle');
 
   useEffect(() => {
     api.get(`/v1/projects/${id}`)
@@ -39,6 +50,9 @@ export default function ProjectDetailPage() {
   if (!project) return <PageWrapper><p className="text-[var(--text-secondary)]">Project not found</p></PageWrapper>;
 
   const budgetPct = project.current_budget > 0 ? (project.actual_spend / project.current_budget) * 100 : 0;
+
+  // Phase 3: add Timeline tab when module access granted
+  const TABS = hasBudgetAccess ? [...BASE_TABS, TIMELINE_TAB] : BASE_TABS;
 
   const tabsWithCounts = TABS.map((t) => ({
     ...t,
@@ -57,7 +71,14 @@ export default function ProjectDetailPage() {
         actions={
           <div className="flex gap-2">
             <Button variant="ghost" iconLeft={<ArrowLeft className="w-4 h-4" />} onClick={() => navigate('/projects')}>Back</Button>
-            <Button variant="secondary" iconLeft={<Edit className="w-4 h-4" />}>Edit</Button>
+            <PDFDownloadLink
+              document={<ProjectSummaryPDF project={project} />}
+              fileName={`${project.name.replace(/\s+/g, '-').toLowerCase()}-summary.pdf`}
+              style={{ textDecoration: 'none' }}
+            >
+              <Button variant="ghost" iconLeft={<Download className="w-4 h-4" />}>Export</Button>
+            </PDFDownloadLink>
+            <Button variant="secondary" iconLeft={<Edit className="w-4 h-4" />} onClick={() => navigate(`/projects/${id}/edit`)}>Edit</Button>
           </div>
         }
       />
@@ -111,6 +132,12 @@ export default function ProjectDetailPage() {
               <h3 className="text-sm font-semibold text-[var(--text-primary)]">Description</h3>
               <p className="text-sm text-[var(--text-secondary)]">{project.description}</p>
             </Card>
+          )}
+          {/* Phase 3: Bank Reconciliation panel in overview when loan present and module access granted */}
+          {hasBudgetAccess && project.has_construction_loan && (
+            <div className="md:col-span-2">
+              <BankReconciliationPanel projectId={project.id} />
+            </div>
           )}
         </div>
       )}
@@ -176,6 +203,11 @@ export default function ProjectDetailPage() {
           data={project.loan_draws || []}
           emptyText="No draws"
         />
+      )}
+
+      {/* Phase 3: Budget Timeline tab — only rendered when module access granted */}
+      {tab === 'timeline' && hasBudgetAccess && (
+        <BudgetTimelineSection projectId={project.id} canWrite />
       )}
     </PageWrapper>
   );

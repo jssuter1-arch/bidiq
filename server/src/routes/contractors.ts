@@ -4,6 +4,7 @@ import { authenticateUser, loadOrgContext, requireRole, validateBody, auditLog }
 import { listHandler, getHandler, createHandler, updateHandler, deleteHandler } from '../utils/crud';
 import { supabaseAdmin } from '../utils/supabase';
 import { AuthenticatedRequest } from '../middleware/authenticateUser';
+import { getNormalizedRateCard } from '../services/scope-normalization-service';
 
 const router = Router();
 const auth = [authenticateUser, loadOrgContext];
@@ -23,7 +24,7 @@ const CreateSchema = z.object({
   specialties: z.array(z.string()).optional(),
   isPreferred: z.boolean().optional(),
   defaultRate: z.number().nonnegative().optional(),
-  rateType: z.enum(['hourly', 'daily', 'fixed', 'sq_ft']).optional(),
+  rateType: z.enum(['hourly', 'daily', 'fixed', 'per_sqft', 'per_unit']).optional(),
   yardiVendorId: z.string().optional(),
   rating: z.number().int().min(1).max(5).optional(),
   notes: z.string().optional(),
@@ -43,12 +44,24 @@ router.get('/:id', ...auth, async (req: AuthenticatedRequest, res, next) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('contractors')
-      .select('*, contractor_notes(*), contractor_invoices(id, total_amount, status, invoice_date, projects(name))')
+      .select('*, contractor_notes(*), contractor_invoices(id, total_amount, status, invoice_date, is_change_order, budget_line_item_id, projects(name), budget_line_items(budgeted_amount, category))')
       .eq('id', req.params.id)
       .eq('org_id', req.orgId!)
       .single();
     if (error || !data) return res.status(404).json({ error: 'Not found' });
-    res.json({ data });
+
+    // Attach normalized rate card if caller opts in
+    let normalizedRateCard = null;
+    if (req.query.includeRateCard === 'true') {
+      try {
+        normalizedRateCard = await getNormalizedRateCard({
+          orgId: req.orgId!,
+          contractorId: req.params.id,
+        });
+      } catch (_e) { /* non-fatal */ }
+    }
+
+    res.json({ data: { ...(data as any), normalized_rate_card: normalizedRateCard } });
   } catch (err) { next(err); }
 });
 

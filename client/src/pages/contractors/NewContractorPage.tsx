@@ -21,7 +21,7 @@ const schema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   defaultRate: z.coerce.number().optional(),
-  rateType: z.enum(['hourly', 'fixed', 'per_sqft', 'per_unit']).optional(),
+  rateType: z.enum(['hourly', 'daily', 'fixed', 'per_sqft', 'per_unit']).optional(),
   rating: z.coerce.number().int().min(1).max(5).optional(),
 });
 
@@ -86,6 +86,7 @@ export default function NewContractorPage() {
               label="Rate Type"
               options={[
                 { value: 'hourly', label: 'Hourly' },
+                { value: 'daily', label: 'Daily' },
                 { value: 'fixed', label: 'Fixed' },
                 { value: 'per_sqft', label: 'Per Sq Ft' },
                 { value: 'per_unit', label: 'Per Unit' },

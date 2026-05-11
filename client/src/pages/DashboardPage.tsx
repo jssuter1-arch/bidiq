@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Building2, FolderOpen, AlertTriangle, TrendingUp } from 'lucide-react';
+import ExecutiveDealsCard from '@/components/deals/ExecutiveDealsCard';
+import ExecutiveBudgetPerformanceCard from '@/components/budget-lifecycle/ExecutiveBudgetPerformanceCard';
+import ExecutivePendingDecisionsCard from '@/components/scenarios/ExecutivePendingDecisionsCard';
+import ExecutiveChangeOrderInsightsCard from '@/components/scenarios/ExecutiveChangeOrderInsightsCard';
+import { useModuleAccess } from '@/hooks/useModuleAccess';
 import CountUp from 'react-countup';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -23,18 +28,22 @@ const stagger = { parent: { animate: { transition: { staggerChildren: 0.08 } } }
 
 export default function DashboardPage() {
   const [data, setData] = useState<any>(null);
+  const [orgName, setOrgName] = useState('');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { hasAccess } = useModuleAccess();
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const [props, projs, notifs, cash] = await Promise.all([
+        const [props, projs, notifs, cash, org] = await Promise.all([
           api.get('/v1/properties', { params: { limit: 100 } }),
           api.get('/v1/projects', { params: { limit: 100 } }),
           api.get('/v1/notifications', { params: { limit: 10 } }),
           api.get('/v1/cash/accounts'),
+          api.get('/v1/organizations/me'),
         ]);
+        setOrgName(org.data.data?.name || '');
         setData({
           properties: props.data.data || [],
           propertiesTotal: props.data.meta?.total || 0,
@@ -89,7 +98,7 @@ export default function DashboardPage() {
     <PageWrapper>
       <PageHeader
         title="Dashboard"
-        subtitle="Portfolio overview — Beantown Companies"
+        subtitle={orgName ? `Portfolio overview — ${orgName}` : 'Portfolio overview'}
       />
 
       <motion.div
@@ -165,6 +174,31 @@ export default function DashboardPage() {
           )}
         </Card>
       </div>
+
+      {(hasAccess('deal_intelligence') || hasAccess('budget_lifecycle') || hasAccess('scenario_modeling') || hasAccess('cost_intelligence_extended')) && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {hasAccess('deal_intelligence') && (
+            <div className="lg:col-span-1">
+              <ExecutiveDealsCard />
+            </div>
+          )}
+          {hasAccess('budget_lifecycle') && (
+            <div className="lg:col-span-1">
+              <ExecutiveBudgetPerformanceCard />
+            </div>
+          )}
+          {hasAccess('scenario_modeling') && (
+            <div className="lg:col-span-1">
+              <ExecutivePendingDecisionsCard />
+            </div>
+          )}
+          {hasAccess('cost_intelligence_extended') && (
+            <div className="lg:col-span-1">
+              <ExecutiveChangeOrderInsightsCard />
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="space-y-3">

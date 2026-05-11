@@ -36,12 +36,12 @@ const ACTS = [
   {
     act: 'Act 3',
     title: 'Equity Intelligence',
-    description: "Model the South End deal: $1.2M purchase + $295K renovation = $1.57M total investment → $1.65M ARV. That's $450K value created, 1.05x multiple.",
+    description: "Model the South End deal: $295K renovation raises rents $400/unit across 6 units → $28.8K more annual income. At a 6% cap rate, that's $480K of new value — a 1.63x multiple.",
     icon: <Calculator className="w-5 h-5" />,
     stats: [
-      { label: 'Total Investment', value: '$1.57M' },
-      { label: 'ARV', value: '$1.65M' },
-      { label: 'Equity Captured', value: '$77K' },
+      { label: 'Renovation Cost', value: '$295K' },
+      { label: 'Value Created', value: '$480K' },
+      { label: 'ROI Multiple', value: '1.63×' },
     ],
     cta: '/equity',
     ctaLabel: 'Open Calculator',

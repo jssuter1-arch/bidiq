@@ -26,6 +26,9 @@ const schema = z.object({
   startDate: z.string().optional(),
   targetCompletion: z.string().optional(),
   hasConstructionLoan: z.boolean().default(false),
+  loanAmount: z.number().nonnegative().optional(),
+  lenderName: z.string().optional(),
+  loanInterestRate: z.number().min(0).max(100).optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -96,8 +99,36 @@ export default function NewProjectPage() {
             <Input label="Start Date" type="date" fullWidth {...register('startDate')} />
             <Input label="Target Completion" type="date" fullWidth {...register('targetCompletion')} />
           </div>
-          <Toggle label="Has Construction Loan" checked={hasLoan} onChange={(v) => { setHasLoan(v); setValue('hasConstructionLoan', v); }} />
-          <div className="flex justify-end gap-2">
+
+          <Toggle
+            label="Has Construction Loan"
+            checked={hasLoan}
+            onChange={(v) => { setHasLoan(v); setValue('hasConstructionLoan', v); }}
+          />
+
+          {hasLoan && (
+            <div className="rounded-xl border border-brand-500/20 bg-brand-500/5 p-4 space-y-3">
+              <p className="text-xs font-semibold text-brand-400">Construction Loan Details</p>
+              <div className="grid grid-cols-2 gap-3">
+                <CurrencyInput label="Loan Amount" onChange={(v) => setValue('loanAmount', v)} />
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium text-[var(--text-secondary)]">Interest Rate (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    max={100}
+                    placeholder="e.g. 7.5"
+                    {...register('loanInterestRate', { valueAsNumber: true })}
+                    className="w-full rounded-lg border bg-[var(--bg-elevated)] text-[var(--text-primary)] border-[var(--border-default)] focus:border-brand-500 focus:outline-none h-9 px-3 text-sm transition-colors"
+                  />
+                </div>
+              </div>
+              <Input label="Lender Name" placeholder="e.g. Eastern Bank" fullWidth {...register('lenderName')} />
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="ghost" onClick={() => navigate('/projects')}>Cancel</Button>
             <Button type="submit" loading={loading}>Create Project</Button>
           </div>

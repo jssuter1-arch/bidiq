@@ -59,11 +59,13 @@ export default function ProjectsPage() {
         actions={
           <div className="flex gap-2">
             <Select options={[
+              { value: '', label: 'All status' },
               { value: 'planning', label: 'Planning' },
               { value: 'active', label: 'Active' },
               { value: 'on_hold', label: 'On Hold' },
               { value: 'completed', label: 'Completed' },
-            ]} placeholder="All status" value={status} onChange={(e) => setStatus(e.target.value)} className="w-32" />
+              { value: 'cancelled', label: 'Cancelled' },
+            ]} value={status} onChange={(e) => setStatus(e.target.value)} className="w-36" />
             <Button iconLeft={<Plus className="w-4 h-4" />} onClick={() => navigate('/projects/new')}>New Project</Button>
           </div>
         }

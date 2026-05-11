@@ -4,12 +4,15 @@ import { motion } from 'framer-motion';
 import {
   LayoutDashboard, Building2, FolderOpen, Users, FileText,
   RefreshCw, BarChart3, Calculator, Wallet, Shield, TrendingUp,
-  Bell, Settings, ChevronLeft, ChevronRight, LogOut, FileBarChart
+  Bell, Settings, ChevronLeft, ChevronRight, LogOut, FileBarChart,
+  Briefcase, ClipboardList, GitBranch, AlertCircle, LayoutTemplate, AlertTriangle,
+  Target, PieChart, Clock, BarChart2,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/authStore';
+import { useModuleAccess } from '@/hooks/useModuleAccess';
 
-const navItems = [
+const NAV_ITEMS_BASE = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/properties', icon: Building2, label: 'Properties' },
   { to: '/projects', icon: FolderOpen, label: 'Projects' },
@@ -25,14 +28,41 @@ const navItems = [
   { to: '/loan-draws', icon: TrendingUp, label: 'Loan Draws' },
   { label: 'divider' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
-  { to: '/audit', icon: FileBarChart, label: 'Audit Log' },
+  { to: '/audit', icon: FileBarChart, label: 'Audit Log', adminOnly: true },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const { signOut } = useAuthStore();
+  const { signOut, userRole } = useAuthStore();
   const navigate = useNavigate();
+  const { hasAccess } = useModuleAccess();
+
+  const navItems = [
+    ...(hasAccess('portfolio_intelligence') ? [{ to: '/decision-hub', icon: Target, label: 'Decision Hub' }, { label: 'divider' }] : []),
+    ...NAV_ITEMS_BASE.slice(0, 5), // dashboard → budget
+    ...(hasAccess('deal_intelligence') || hasAccess('budget_lifecycle')
+      ? [{ label: 'divider' }]
+      : []),
+    ...(hasAccess('deal_intelligence')
+      ? [{ to: '/deals', icon: Briefcase, label: 'Pipeline' }]
+      : []),
+    ...(hasAccess('budget_lifecycle')
+      ? [{ to: '/lender-dossier', icon: ClipboardList, label: 'Lender Dossier' }]
+      : []),
+    ...(hasAccess('scenario_modeling') ? [{ label: 'divider' }] : []),
+    ...(hasAccess('scenario_modeling') ? [{ to: '/scenarios', icon: GitBranch, label: 'Scenarios' }] : []),
+    ...(hasAccess('scenario_modeling') ? [{ to: '/constraints', icon: AlertCircle, label: 'Constraints' }] : []),
+    ...(hasAccess('cost_intelligence_extended') ? [{ label: 'divider' }] : []),
+    ...(hasAccess('cost_intelligence_extended') ? [{ to: '/intelligence/templates', icon: LayoutTemplate, label: 'Templates' }] : []),
+    ...(hasAccess('cost_intelligence_extended') ? [{ to: '/intelligence/change-orders', icon: AlertTriangle, label: 'Change Orders' }] : []),
+    ...(hasAccess('portfolio_intelligence') ? [{ label: 'divider' }] : []),
+    ...(hasAccess('portfolio_intelligence') ? [{ to: '/portfolio', icon: PieChart, label: 'Portfolio' }] : []),
+    ...(hasAccess('portfolio_intelligence') ? [{ to: '/portfolio/capital-timeline', icon: Clock, label: 'Capital Timeline' }] : []),
+    ...(hasAccess('portfolio_intelligence') ? [{ to: '/portfolio/cost-savings', icon: BarChart2, label: 'Cost Savings' }] : []),
+    ...(hasAccess('portfolio_intelligence') ? [{ to: '/portfolio/benchmarks', icon: BarChart3, label: 'Benchmarks' }] : []),
+    ...NAV_ITEMS_BASE.slice(5), // remaining items starting from divider
+  ];
 
   return (
     <motion.aside
@@ -59,6 +89,7 @@ export default function Sidebar() {
           if (item.label === 'divider') {
             return <div key={i} className="my-1 mx-3 border-t border-[var(--border-subtle)]" />;
           }
+          if ((item as any).adminOnly && userRole !== 'admin') return null;
           const Icon = item.icon!;
           return (
             <NavLink

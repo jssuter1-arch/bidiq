@@ -1,0 +1,4 @@
+ALTER TABLE projects
+  ADD COLUMN IF NOT EXISTS loan_amount NUMERIC(14,2),
+  ADD COLUMN IF NOT EXISTS lender_name TEXT,
+  ADD COLUMN IF NOT EXISTS loan_interest_rate NUMERIC(6,4);

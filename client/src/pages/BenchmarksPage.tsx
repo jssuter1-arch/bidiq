@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, LayoutTemplate, AlertTriangle, Settings2 } from 'lucide-react';
 import api from '@/services/api';
 import PageWrapper from '@/components/layout/PageWrapper';
 import PageHeader from '@/components/layout/PageHeader';
@@ -9,8 +10,11 @@ import Button from '@/components/ui/Button';
 import Table from '@/components/ui/Table';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils/format';
+import { useModuleAccess } from '@/hooks/useModuleAccess';
 
 export default function BenchmarksPage() {
+  const navigate = useNavigate();
+  const { hasAccess } = useModuleAccess();
   const [benchmarks, setBenchmarks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [recomputing, setRecomputing] = useState(false);
@@ -44,6 +48,44 @@ export default function BenchmarksPage() {
     <PageWrapper>
       <PageHeader title="Cost Intelligence" subtitle="Benchmark your project costs against historical actuals"
         actions={<Button variant="secondary" size="sm" iconLeft={<RefreshCw className="w-3.5 h-3.5" />} loading={recomputing} onClick={handleRecompute}>Recompute</Button>} />
+
+      {hasAccess('cost_intelligence_extended') && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-2">
+          <Card className="cursor-pointer hover:border-brand-500/40 transition-colors" onClick={() => navigate('/intelligence/templates')}>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-brand-500/10">
+                <LayoutTemplate className="w-4 h-4 text-brand-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Pricing Templates</p>
+                <p className="text-xs text-[var(--text-tertiary)]">Reusable scope-based budgets</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="cursor-pointer hover:border-brand-500/40 transition-colors" onClick={() => navigate('/intelligence/change-orders')}>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/10">
+                <AlertTriangle className="w-4 h-4 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Change Order Analytics</p>
+                <p className="text-xs text-[var(--text-tertiary)]">Root-cause breakdown & trends</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="cursor-pointer hover:border-brand-500/40 transition-colors" onClick={() => navigate('/intelligence/scope-factors')}>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-500/10">
+                <Settings2 className="w-4 h-4 text-purple-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Scope Factors</p>
+                <p className="text-xs text-[var(--text-tertiary)]">Normalize contractor rates</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {chartData.length > 0 && (
         <Card className="space-y-3">

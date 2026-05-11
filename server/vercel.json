@@ -11,5 +11,9 @@
       "src": "/(.*)",
       "dest": "/api/index.ts"
     }
+  ],
+  "crons": [
+    { "path": "/api/v1/jobs/budget-reconciliation", "schedule": "0 9 * * *" },
+    { "path": "/api/v1/jobs/scenario-recalc", "schedule": "*/5 * * * *" }
   ]
 }

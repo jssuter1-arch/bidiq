@@ -12,6 +12,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import CurrencyInput from '@/components/ui/CurrencyInput';
+import Textarea from '@/components/ui/Textarea';
 import { ArrowLeft } from 'lucide-react';
 
 const schema = z.object({
@@ -80,6 +81,7 @@ export default function NewPropertyPage() {
             <CurrencyInput label="Purchase Price" onChange={(v) => setValue('purchasePrice', v)} />
             <CurrencyInput label="Current Value" onChange={(v) => setValue('currentValue', v)} />
           </div>
+          <Textarea label="Notes (optional)" fullWidth {...register('notes')} />
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => navigate('/properties')}>Cancel</Button>
             <Button type="submit" loading={loading}>Create Property</Button>
